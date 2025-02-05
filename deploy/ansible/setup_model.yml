@@ -1,0 +1,36 @@
+---
+- name: Setup and run the benchmark
+  hosts: host
+  vars:
+    src_directory: "/Users/nmysore/Documents/Projects/llmserver"
+    mount_path: "/mnt/data"  # Mounted EBS volume path
+    project_dir: "/mnt/data/llmserver"  # Store project on mounted volume
+  tasks:
+    # Step 1: Ensure the mounted volume exists
+    - name: Ensure mounted volume exists
+      ansible.builtin.file:
+        path: "{{ mount_path }}"
+        state: directory
+        mode: '0755'
+
+    # Step 2: Ensure project directory exists
+    - name: Ensure project directory exists
+      ansible.builtin.file:
+        path: "{{ project_dir }}"
+        state: directory
+        mode: '0755'
+
+    # Step 3: Copy model.zip to the server
+    - name: Copy model.zip to the server
+      ansible.builtin.copy:
+        src: "{{ src_directory }}/model.zip"
+        dest: "{{ project_dir }}/model.zip"
+        mode: '0644'
+
+    # Step 4: Unzip model.zip
+    - name: Unzip model.zip
+      ansible.builtin.shell:
+        cmd: "unzip -o {{ project_dir }}/model.zip -d {{ project_dir }}/model"
+      args:
+        chdir: "{{ project_dir }}"
+        executable: /bin/bash

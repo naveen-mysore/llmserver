@@ -1,0 +1,53 @@
+---
+- name: Setup and run local script on remote server
+  hosts: host
+  vars:
+    src_directory: "/Users/nmysore/Documents/Projects/llmserver"
+    mount_path: "/mnt/data"  # Mounted EBS volume path
+    project_dir: "/mnt/data/llmserver"  # Store project on mounted volume
+  tasks:
+    # Step 1: Ensure the mounted volume exists and is accessible
+    - name: Ensure mounted volume exists
+      ansible.builtin.file:
+        path: "{{ mount_path }}"
+        state: directory
+        mode: '0755'
+
+    # Step 2: Remove the project directory if it exists and create it
+    - name: Ensure project directory exists
+      ansible.builtin.shell:
+        cmd: >
+          rm -rf {{ project_dir }} &&
+          mkdir -p {{ project_dir }}
+      args:
+        executable: /bin/bash
+
+    # Step 3: Synchronize the local script to the remote server, excluding venv directory
+    - name: Synchronize project files except venv, deploy
+      ansible.builtin.synchronize:
+        src: "{{ src_directory }}/"
+        dest: "{{ project_dir }}"
+        rsync_opts:
+          - "--exclude=venv"
+          - "--exclude=deploy"
+          - "--exclude=.git"
+          - "--exclude=model"
+          - "--exclude=*.zip"
+
+    # Step 5: Create a virtual environment inside the mounted volume
+    - name: Create a Python virtual environment in the mounted drive
+      ansible.builtin.shell:
+        cmd: "python3 -m venv venv"
+        chdir: "{{ project_dir }}"
+      args:
+        executable: /bin/bash
+
+    # Step 6: Activate virtual environment and install dependencies
+    - name: Install dependencies inside mounted volume
+      ansible.builtin.shell:
+        cmd: >
+          source venv/bin/activate &&
+          pip install --no-cache-dir -r requirements.txt
+        chdir: "{{ project_dir }}"
+      args:
+        executable: /bin/bash

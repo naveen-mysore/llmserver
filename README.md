@@ -5,8 +5,12 @@ This project provides a **production-lean inference stack** for running a Gemmaâ
 The focus is on **clear, reproducible setup**: local dev, singleâ€‘VM deploy, and a path to scale. 
 
 GPU infrastructure is hosted at UCSB. Intermediate infra (AWS lambda, sms integrations, whats app integration, we chat integration ) is omitted from this repo. The demo shows the real world usage of inference server.
-![SMS Demo](media/sms.gif)
-![Wechat Demo](media/wechat.gif)
+
+<div style="display: flex; gap: 10px;">
+  <img src="media/sms.gif" width="49%" alt="SMS Demo">
+  <img src="media/wechat.gif" width="49%" alt="Wechat Demo">
+</div>
+
 
 ---
 
